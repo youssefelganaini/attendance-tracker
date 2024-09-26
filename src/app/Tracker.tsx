@@ -19,7 +19,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { PlusCircle, MinusCircle, Users } from "lucide-react";
+import { Users } from "lucide-react";
+import { randomInt } from "crypto";
 
 type ChangeEvent = {
   type: "increment" | "decrement";
@@ -33,19 +34,42 @@ export const AttendeeTracker = () => {
     []
   );
 
+  const generateInitialData = () => {
+    const data = [];
+    const now = new Date();
+
+    // Generate 10 data points over the last 5 hours
+    for (let i = 10; i > 0; i--) {
+      const time = new Date(now.getTime() - i * 30 * 60 * 1000); // Each point is 30 minutes apart (5 hours / 10 = 30 minutes)
+      setChanges((prev) => [
+        { type: "increment", timestamp: time },
+        ...prev.slice(0, 9),
+      ]);
+      data.push({
+        time: time.toLocaleTimeString(),
+        count: 30 + Math.floor(Math.random() * 5) + 2,
+      });
+    }
+
+    return data;
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setChartData((prev) => {
-        const newData = [
-          ...prev,
-          { time: new Date().toLocaleTimeString(), count },
-        ];
+      setCount(30);
+      setChartData(() => {
+        const newData = generateInitialData();
+        setCount(newData[9].count);
         return newData.slice(-10); // Keep only the last 10 data points
       });
     }, 5000); // Update every 5 seconds
 
     return () => clearInterval(interval);
   }, [count]);
+
+  // values for the y-axis domain
+  const minCount = Math.min(...chartData.map((data) => data.count));
+  const maxCount = Math.max(...chartData.map((data) => data.count));
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -64,7 +88,7 @@ export const AttendeeTracker = () => {
               <CardContent className="text-center">
                 <Users className="h-12 w-12 mx-auto mb-2" />
                 <div className="text-4xl font-bold">{count}</div>
-                <div className="text-sm text-muted-foreground">Attendees</div>
+                <div className="text-sm text-muted-foreground">People</div>
               </CardContent>
             </Card>
           </div>
@@ -101,7 +125,7 @@ export const AttendeeTracker = () => {
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="time" />
-                      <YAxis />
+                      <YAxis domain={[minCount - 1, maxCount + 1]} />
                       <Tooltip />
                       <Line type="monotone" dataKey="count" stroke="#8884d8" />
                     </LineChart>
