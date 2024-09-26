@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,7 +19,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Users } from "lucide-react";
-import { randomInt } from "crypto";
 
 type ChangeEvent = {
   type: "increment" | "decrement";
